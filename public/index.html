@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nivil — Estoque de Vinil</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script>document.documentElement.dataset.theme = localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');</script>
+</head>
+<body>
+<div class="app">
+
+  <aside class="side">
+    <div class="brand">
+      <div class="record"></div>
+      <div><h1>Nivil</h1><p>acervo de vinis</p></div>
+    </div>
+
+    <nav>
+      <button class="on" data-tab="stock">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg><span>Acervo</span>
+      </button>
+      <button data-tab="moves">
+        <svg viewBox="0 0 24 24"><path d="M4 8h14l-3-3M20 16H6l3 3"/></svg><span>Movimentações</span>
+      </button>
+      <button data-tab="reports">
+        <svg viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20v-7"/></svg><span>Relatórios</span>
+      </button>
+    </nav>
+
+    <div class="side-foot">
+      <button class="ghost icon" id="theme" title="Alternar tema" aria-label="Alternar tema">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 0 0 16z" fill="currentColor"/></svg>
+      </button>
+      <small>Side A · Side B</small>
+    </div>
+  </aside>
+
+  <div class="content">
+    <header class="top">
+      <div>
+        <p class="eyebrow" id="eyebrow">Coleção</p>
+        <h2 id="pageTitle">Acervo</h2>
+      </div>
+      <button class="primary" id="addBtn"><span class="plus">+</span> Novo disco</button>
+    </header>
+
+    <div class="stats" id="stats"></div>
+
+    <!-- ACERVO -->
+    <section class="view" id="v-stock">
+      <div class="searchbar">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+        <input id="search" type="search" placeholder="Buscar por título, artista, gênero ou gravadora…">
+      </div>
+      <div class="filters">
+        <select id="fGenre"><option value="">Todos os gêneros</option></select>
+        <select id="fFormat"><option value="">Todos os formatos</option></select>
+        <input id="fMin" type="number" min="0" placeholder="Preço mín.">
+        <input id="fMax" type="number" min="0" placeholder="Preço máx.">
+        <label class="check"><input type="checkbox" id="fLow"><span>Estoque baixo</span></label>
+        <select id="fSort">
+          <option value="recent">Mais recentes</option>
+          <option value="title">Título (A–Z)</option>
+          <option value="artist">Artista (A–Z)</option>
+          <option value="year">Ano (mais novo)</option>
+          <option value="priceAsc">Menor preço</option>
+          <option value="priceDesc">Maior preço</option>
+          <option value="stock">Menor estoque</option>
+        </select>
+        <button class="ghost" id="fClear">Limpar</button>
+      </div>
+      <main id="grid"></main>
+      <div id="empty" class="empty" hidden>
+        <div class="record big"></div>
+        <h3>Nenhum disco por aqui</h3>
+        <p>Cadastre o primeiro vinil ou ajuste os filtros.</p>
+      </div>
+      <div class="pager" id="pager"></div>
+    </section>
+
+    <!-- MOVIMENTAÇÕES -->
+    <section class="view" id="v-moves" hidden>
+      <div class="filters">
+        <select id="mType">
+          <option value="">Todas as movimentações</option>
+          <option value="entrada">Entradas</option>
+          <option value="venda">Vendas</option>
+          <option value="ajuste">Ajustes</option>
+        </select>
+      </div>
+      <div class="panel flush" id="movesList"></div>
+      <div id="movesEmpty" class="empty" hidden>
+        <div class="record big"></div>
+        <h3>Sem movimentações ainda</h3>
+        <p>Registre vendas e entradas pelo detalhe de cada disco.</p>
+      </div>
+      <div class="pager" id="mPager"></div>
+    </section>
+
+    <!-- RELATÓRIOS -->
+    <section class="view" id="v-reports" hidden>
+      <div class="filters">
+        <select id="rDays">
+          <option value="7">Últimos 7 dias</option>
+          <option value="30" selected>Últimos 30 dias</option>
+          <option value="90">Últimos 90 dias</option>
+          <option value="365">Último ano</option>
+        </select>
+      </div>
+      <div class="kpis" id="kpis"></div>
+      <div class="panel"><h3>Faturamento por dia</h3><div id="chart"></div></div>
+      <div class="two">
+        <div class="panel"><h3>Mais vendidos</h3><div id="top"></div></div>
+        <div class="panel"><h3>Estoque por gênero</h3><div id="byGenre"></div></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- FORMULÁRIO -->
+<dialog id="dialog">
+  <form id="form">
+    <h2 id="dialogTitle">Novo disco</h2>
+    <input type="hidden" name="id">
+    <label>Título<input name="title" required></label>
+    <label>Artista<input name="artist" required></label>
+    <div class="row">
+      <label>Ano<input name="year" type="number" min="1900" max="2100"></label>
+      <label>Gênero<input name="genre" list="genres"></label>
+    </div>
+    <datalist id="genres"></datalist>
+    <div class="row">
+      <label>Gravadora<input name="label"></label>
+      <label>Formato
+        <select name="format"><option>LP</option><option>EP</option><option>Single</option><option>Compacto 7"</option><option>Box</option><option>Outro</option></select>
+      </label>
+    </div>
+    <div class="row">
+      <label>Condição
+        <select name="condition"><option>Lacrado</option><option>Mint (M)</option><option selected>Near Mint (NM)</option><option>VG+</option><option>VG</option><option>G</option></select>
+      </label>
+      <label>Preço (R$)<input name="price" type="number" step="0.01" min="0" value="0"></label>
+    </div>
+    <div class="row">
+      <label>Quantidade<input name="quantity" type="number" min="0" value="1"></label>
+      <label>Estoque mínimo<input name="minStock" type="number" min="0" value="2"></label>
+    </div>
+    <label>URL da capa (opcional)<input name="cover" type="url" placeholder="https://…"></label>
+    <label>Cor do vinil<input name="color" type="color" value="#1a1a1a"></label>
+    <label>Faixas (uma por linha; duração opcional após “|”)
+      <textarea name="tracks" rows="4" placeholder="Faixa 1 | 3:45&#10;Faixa 2 | 4:10"></textarea>
+    </label>
+    <label>Notas<textarea name="notes" rows="2"></textarea></label>
+    <div class="actions">
+      <button type="button" class="ghost" id="cancel">Cancelar</button>
+      <button class="primary" type="submit">Salvar</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- DETALHES -->
+<dialog id="detail"><div id="detailBody"></div></dialog>
+
+<div id="toast" class="toast" hidden></div>
+<script src="app.js"></script>
+</body>
+</html>
